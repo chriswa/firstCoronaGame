@@ -7,6 +7,7 @@ require "entities"
 require "input"
 require "game"
 
---TODO: collision
---TODO: remove entities which have gone off-screen
+--TODO: layers (especially medals!)
+--TODO: boost visual indicator
+--TODO: "you win" "achievement" toast?
 

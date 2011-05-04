@@ -3,7 +3,7 @@ Entity = {
 
   -- class vars
   all = {},
-  collisionGroups = { player = {}, enemies = {}, player_bullets = {}, enemy_bullets = {} },
+  collisionGroups = { player = {}, enemies = {}, player_bullets = {}, enemy_bullets = {}, powerups = {} },
   
   -- ctor
   new = function(displayObject, collisionGroup)
@@ -65,6 +65,7 @@ Entity.doCollisions = function()
   Entity._doCollisions("player_bullets", "enemies")
   Entity._doCollisions("player", "enemies")
   Entity._doCollisions("player", "enemy_bullets")
+  Entity._doCollisions("player", "powerups")
 end
 Entity._doCollisions = function(group1, group2)
   for e1, _ in pairs(Entity.collisionGroups[group1]) do
@@ -87,15 +88,30 @@ SimpleEnemy = {
   new = function()
     local displayObject = display.newImage("enemy.png")
     local self = Entity.new(displayObject, "enemies")
-  
+    
     self.displayObject.x = math.random(0, 480 - self.displayObject.width) + self.displayObject.width / 2
     self.displayObject.y = -self.displayObject.height
+    
+    local vx = math.random() - 0.5
+    local vy = math.random() - 0.5
+    
+    -- clamp vx to prevent enemies from going off edges of screen
+    vx = math.max(vx, -(self.displayObject.x - 20) / 320)
+    vx = math.min(vx, (480 - 20 - self.displayObject.x) / 320)
     
     -- override methods
     local superUpdate = self.update
     self.update = function()
       local displayObject = self.displayObject
       displayObject.y = displayObject.y + 1
+      
+      if Game.speed > 500 then
+        displayObject.x = displayObject.x + (vx * math.min(1, (Game.speed - 500) / 500))
+      end
+      if Game.speed > 1000 then
+        displayObject.y = displayObject.y + (vy * math.min(1, (Game.speed - 1000) / 500))
+      end
+      
       if self.age % 50 == 0 then
         SimpleEnemyBullet.new(self)
       end
@@ -108,6 +124,10 @@ SimpleEnemy = {
     self.collide = function(otherGroup, otherEntity)
       if otherGroup == 'player' then
         Game.onEnemyEscaped(self)
+      elseif otherGroup == 'player_bullets' then
+        if math.random(1, 20) == 1 then
+          SimplePowerup.new(self)
+        end
       end
       self.remove(otherGroup)
     end
@@ -123,12 +143,43 @@ SimpleEnemyBullet = {
     local self = Entity.new(displayObject, "enemy_bullets")
     
     self.displayObject.x = enemy.displayObject.x
-    self.displayObject.y = enemy.displayObject.y
+    self.displayObject.y = enemy.displayObject.y + 5
     
     -- override methods
     local superUpdate = self.update
     self.update = function()
       self.displayObject.y = self.displayObject.y + 5
+      superUpdate()
+    end
+    self.collide = function(otherGroup, otherEntity)
+      self.remove(otherGroup)
+    end
+    
+    return self
+  end,
+}
+
+-- SimplePowerup class
+SimplePowerup = {
+  new = function(enemy)
+    local displayObject = display.newImage("powerup-blue.png")
+    local self          = Entity.new(displayObject, "powerups")
+  
+    self.displayObject.x = enemy.displayObject.x
+    self.displayObject.y = enemy.displayObject.y
+    
+    self.collisionFudge = -10 -- tweak collision system to give us a bigger hitbox (to compensate for player's smaller hitbox)
+    
+    local vy = 1.2
+    local vx = math.random() - 0.5
+    
+    -- override methods
+    local superUpdate = self.update
+    self.update = function()
+      if self.reap then return end -- DEBUG
+      vy = vy - 0.02
+      self.displayObject.x = self.displayObject.x + vx
+      self.displayObject.y = self.displayObject.y + vy
       superUpdate()
     end
     self.collide = function(otherGroup, otherEntity)
@@ -146,7 +197,7 @@ SimplePlayerBullet = {
     local self          = Entity.new(displayObject, "player_bullets")
   
     self.displayObject.x = player.displayObject.x
-    self.displayObject.y = player.displayObject.y
+    self.displayObject.y = player.displayObject.y - 10
     
     -- override methods
     local superUpdate = self.update
@@ -168,8 +219,8 @@ SimplePlayer = {
   new = function()
     local spriteSheet = sprite.newSpriteSheet( "player2.png", 30, 30 )
     local spriteSet = sprite.newSpriteSet(spriteSheet, 1, 16)
-    sprite.add(spriteSet, "healthy", 1, 8, 100)
-    sprite.add(spriteSet, "wounded", 9, 1, 100)
+    sprite.add(spriteSet, "healthy", 1, 8, 500)
+    sprite.add(spriteSet, "wounded", 9, 1, 500)
     
     local displayObject = sprite.newSprite(spriteSet)
     
@@ -179,7 +230,8 @@ SimplePlayer = {
     self.displayObject.y = 300
     
     self.collisionFudge = 10 -- tweak collision system to give us a smaller hitbox
-    self.speed = 4
+    self.speed          = 4
+    self.powerup        = 0
     
     -- private member vars?
     local weaponCooldown      = 0
@@ -191,11 +243,10 @@ SimplePlayer = {
     end
     self.hurt = function()
       self.speed = self.speed / 2
-      hurtFramesRemaining = 30 * 2
+      hurtFramesRemaining = 30 * 3
       self.displayObject:prepare("wounded")
       self.displayObject:play()
     end
-    
     self.heal = function()
       self.speed = 4
       self.displayObject:prepare("healthy")
@@ -216,7 +267,9 @@ SimplePlayer = {
         local displayObject = self.displayObject
         local dx = Input.x - displayObject.x
         local dy = Input.y - displayObject.y
-        vx, vy = normalize2dVector(dx, dy, self.speed)
+        local correctedSpeed = self.speed
+        if self.powerup > 0 and hurtFramesRemaining == 0 then correctedSpeed = correctedSpeed * 1.5 end
+        vx, vy = normalize2dVector(dx, dy, correctedSpeed)
         if vx ~= 1 / 0 then
           if math.abs(dx) < math.abs(vx) then vx = dx end
           if math.abs(dy) < math.abs(vy) then vy = dy end
@@ -229,17 +282,23 @@ SimplePlayer = {
       -- shoot
       if weaponCooldown <= 0 then
         SimplePlayerBullet.new(self)
-        weaponCooldown = 20
+        weaponCooldown = weaponCooldown + 20
+        if self.powerup > 0 then
+          self.powerup = self.powerup - 1
+          weaponCooldown = weaponCooldown - 10
+        end
       else
         weaponCooldown = weaponCooldown - 1
-      end
-      if self.age % 20 == 0 then
-        
       end
       
     end
     self.collide = function(otherGroup, otherEntity)
-      self.hurt()
+      if otherGroup == "powerups" then
+        self.powerup = self.powerup + 20
+        if weaponCooldown > 10 then weaponCooldown = weaponCooldown - 10 end
+      else
+        self.hurt()
+      end
     end
     
     return self.init(self)
