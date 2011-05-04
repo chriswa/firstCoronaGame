@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Komodo Project File - DO NOT EDIT -->
+<project id="9a676f92-82e4-4cf2-959f-f8c8553ef5c7" kpf_version="5" name="Corona Game.komodoproject">
+<preference-set idref="9a676f92-82e4-4cf2-959f-f8c8553ef5c7">
+  <string relative="path" id="import_dirname"></string>
+  <string id="import_exclude_matches">*.*~;*.bak;*.tmp;CVS;.#*;*.pyo;*.pyc;.svn;_svn;.git;.hg;.bzr;*%*;tmp*.html;.DS_Store;*.swp;*.kpf;*.komodoproject;*.komodotools</string>
+  <string id="import_include_matches"></string>
+</preference-set>
+</project>

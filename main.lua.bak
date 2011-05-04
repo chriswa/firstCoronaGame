@@ -1,0 +1,146 @@
+local background = display.newImage("background-nebula.png")
+
+local player = display.newImage("player-ship.png")
+player.x = 240
+player.y = 300
+local function player_update()
+  if finger_down then
+    local dx = finger_x - player.x
+    local dy = finger_y - player.y
+    if (dx < -2) then
+      dx = -2
+    end
+    if (dx > 2) then
+      dx = 2
+    end
+    if (dy < -2) then
+      dy = -2
+    end
+    if (dy > 2) then
+      dy = 2
+    end
+    player.x = player.x + dx
+    player.y = player.y + dy
+  end
+end
+add_entity(player, player_update, {"player"})
+
+local age = 0
+
+local entities = {}
+local collision_groups = { player = {}, enemies = {}, player_bullets = {}, enemy_bullets = {} }
+
+--TODO: collision
+--TODO: remove entities which have gone off-screen
+
+--
+local function add_entity(sprite, update, collision_groups)
+  local entity = { sprite = sprite, update = update, age = 0, collision_groups = collision_groups }
+  for _, collision_group in ipairs(collision_groups) do
+    table.insert(collision_groups[collision_group], entity)
+    set[l] = true
+  end
+  table.insert(entities, entity)
+end
+
+--
+local function player_spawn_bullet()
+  local sprite = display.newImage("player-bullet.png")
+  sprite.x = player.x
+  sprite.y = player.y
+  
+  local function update(entity)
+    entity.sprite.y = entity.sprite.y - 5
+  end
+  
+  add_entity(sprite, update, {"player_bullets"})
+end
+
+--
+local function enemy_spawn_bullet(x, y)
+  local sprite = display.newImage("enemy-bullet.png")
+  sprite.x = x
+  sprite.y = y
+  
+  local function update(entity)
+    entity.sprite.y = entity.sprite.y + 5
+  end
+  
+  add_entity(sprite, update, {"enemy_bullets"})
+end
+
+--
+local function spawn_enemy()
+  local sprite = display.newImage("enemy.png")
+  sprite.x = math.random(0, 480-sprite.width) + sprite.width/2
+  sprite.y = -sprite.height
+  
+  local function update(entity)
+    entity.sprite.y = entity.sprite.y + 1
+    if entity.age % 50 == 0 then
+      enemy_spawn_bullet(entity.sprite.x, entity.sprite.y)
+    end
+  end
+  
+  add_entity(sprite, update, {"enemies"})
+end
+
+--
+local function game_update(event)
+  age = age + 1
+  if age % 30 == 0 then
+    spawn_enemy()
+  end
+  if age % 20 == 0 then
+    player_spawn_bullet()
+  end
+  for i,entity in ipairs(entities) do
+    entity.age = entity.age + 1
+    entity:update()
+  end
+  
+  -- check for collisions
+  do_collisions("player_bullets", "enemies")
+  do_collisions("player", "enemies")
+  do_collisions("player", "enemy_bullets")
+  
+  -- destroy entities
+end
+
+--
+local function do_collisions(group1, group2)
+  for _, e1 in ipairs(collision_groups[group1]) do
+    for _, e2 in ipairs(collision_groups[group2]) do
+      local s1 = e1.sprite
+      local s2 = e2.sprite
+      if math.abs(s1.x - s2.x) < (s1.width  + s2.width ) / 2 and
+         math.abs(s1.y - s2.y) < (s1.height + s2.height) / 2 then
+        e1:collide(group2, e2)
+        e2:collide(group1, e1)
+      end
+    end
+  end
+end
+
+--
+finger_x = 0
+finger_y = 0
+finger_down = false
+local function on_touch(event)
+  finger_x = event.x
+  finger_y = event.y
+  if event.phase == "began" then
+    finger_down = true
+  elseif event.phase == "ended" then
+    finger_down = false
+  end
+end
+  
+
+--
+spawn_enemy()
+Runtime:addEventListener( "enterFrame", game_update );
+Runtime:addEventListener( "touch", on_touch );
+
+
+
