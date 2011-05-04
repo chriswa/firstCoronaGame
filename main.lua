@@ -1,3 +1,7 @@
+-- external libs
+require "sprite"
+
+-- my libs
 require "util"
 require "entities"
 require "input"

@@ -13,7 +13,7 @@ local slices = {
 }
 
 local B = {
-  speed         = 3,
+  speed         = 0.1,
   slices        = slices,
   displayGroup  = display.newGroup(),
   bottom        = null,
@@ -22,13 +22,13 @@ local B = {
   nextSlice     = 3,
 }
 
-B.bottom = display.newImage(B.slices[1])
-B.bottom.y = 160
+B.bottom      = display.newImage(B.slices[1])
+B.bottom.y    = 160
 B.displayGroup:insert(B.bottom)
 
-B.top    = display.newImage(slices[2])
+B.top         = display.newImage(B.slices[2])
+B.top.y       = -160
 B.displayGroup:insert(B.top)
-B.top.y    = -160
 
 local update = function(event)
   B.bottom.y = B.bottom.y + B.speed
