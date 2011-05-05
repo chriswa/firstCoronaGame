@@ -1,11 +1,12 @@
-display.setStatusBar(display.HiddenStatusBar)
+if system.getInfo("model") == "iPhone" then
+  display.setStatusBar(display.HiddenStatusBar)
+end
 
 -- external libs
 require "sprite"
 
 -- my libs
 require "util"
-require "entities"
 require "input"
 require "game"
 

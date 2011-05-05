@@ -3,6 +3,7 @@ module(..., package.seeall)
 -- globals
 speed        = 0.1
 displayGroup = display.newGroup()
+setParent    = function(parent) parent:insert(displayGroup) end
 
 -- internals
 local slices = {
