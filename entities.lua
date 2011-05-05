@@ -86,7 +86,7 @@ end
 -- SimpleEnemy class
 SimpleEnemy = {
   new = function()
-    local displayObject = display.newImage("enemy.png")
+    local displayObject = display.newImage("images/enemy.png")
     local self = Entity.new(displayObject, "enemies")
     
     self.displayObject.x = math.random(0, 480 - self.displayObject.width) + self.displayObject.width / 2
@@ -139,7 +139,7 @@ SimpleEnemy = {
 -- SimpleEnemyBullet class
 SimpleEnemyBullet = {
   new = function(enemy)
-    local displayObject = display.newImage("enemy-bullet.png")
+    local displayObject = display.newImage("images/enemy-bullet.png")
     local self = Entity.new(displayObject, "enemy_bullets")
     
     self.displayObject.x = enemy.displayObject.x
@@ -162,7 +162,7 @@ SimpleEnemyBullet = {
 -- SimplePowerup class
 SimplePowerup = {
   new = function(enemy)
-    local displayObject = display.newImage("powerup-blue.png")
+    local displayObject = display.newImage("images/powerup-blue.png")
     local self          = Entity.new(displayObject, "powerups")
   
     self.displayObject.x = enemy.displayObject.x
@@ -193,7 +193,7 @@ SimplePowerup = {
 -- SimplePlayerBullet class
 SimplePlayerBullet = {
   new = function(player)
-    local displayObject = display.newImage("player-bullet.png")
+    local displayObject = display.newImage("images/player-bullet.png")
     local self          = Entity.new(displayObject, "player_bullets")
   
     self.displayObject.x = player.displayObject.x
@@ -217,7 +217,7 @@ SimplePlayerBullet = {
 -- SimplePlayer class
 SimplePlayer = {
   new = function()
-    local spriteSheet = sprite.newSpriteSheet( "player2.png", 30, 30 )
+    local spriteSheet = sprite.newSpriteSheet( "images/player.png", 30, 30 )
     local spriteSet = sprite.newSpriteSet(spriteSheet, 1, 16)
     sprite.add(spriteSet, "healthy", 1, 8, 500)
     sprite.add(spriteSet, "wounded", 9, 1, 500)

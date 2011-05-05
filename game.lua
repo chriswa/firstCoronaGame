@@ -22,14 +22,14 @@ for colour, medal in pairs(Game.medals) do
   medal.colour   = colour
   medal.points   = 0
   medal.awarded  = 0
-  medal.progress = display.newImage("star-" .. colour .. ".png")
+  medal.progress = display.newImage("images/star-" .. colour .. ".png")
   medal.progress.x = 10 + 10
   medal.progress.y = medal.row * 16
   medal.award = function(medal)
     medal.points = 0
     if medal.awarded < 5 then
       medal.awarded = medal.awarded + 1
-      local displayObject = display.newImage("star-" .. colour .. ".png")
+      local displayObject = display.newImage("images/star-" .. colour .. ".png")
       displayObject.x  = medal.awarded * 10 + 10
       displayObject.y  = medal.row     * 16
       medal.progress.x = medal.progress.x + 10

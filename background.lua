@@ -1,15 +1,15 @@
 local slices = {
-  "background-slice-11.png",
-  "background-slice-10.png",
-  "background-slice-9.png",
-  "background-slice-8.png",
-  "background-slice-7.png",
-  "background-slice-6.png",
-  "background-slice-5.png",
-  "background-slice-4.png",
-  "background-slice-3.png",
-  "background-slice-2.png",
-  "background-slice-1.png",
+  "images/background-slice-11.png",
+  "images/background-slice-10.png",
+  "images/background-slice-9.png",
+  "images/background-slice-8.png",
+  "images/background-slice-7.png",
+  "images/background-slice-6.png",
+  "images/background-slice-5.png",
+  "images/background-slice-4.png",
+  "images/background-slice-3.png",
+  "images/background-slice-2.png",
+  "images/background-slice-1.png",
 }
 
 local B = {
