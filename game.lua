@@ -1,4 +1,4 @@
-require "background" -- imports Background
+local Background = require("background") -- imports Background
 
 
 Game = {}

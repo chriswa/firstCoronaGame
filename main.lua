@@ -1,3 +1,5 @@
+display.setStatusBar(display.HiddenStatusBar)
+
 -- external libs
 require "sprite"
 
